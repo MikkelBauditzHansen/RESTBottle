@@ -3,16 +3,21 @@ using System.Linq;
 
 namespace RESTBottle.Bottles
 {
-    public class BottlesRepository
+    public class BottlesRepositoryList : IBottlesRepository
+
     {
         private List<Bottle> bottles = new List<Bottle>();
         private int nextId = 1;
 
-        public BottlesRepository()
+        public BottlesRepositoryList(bool includeData = true)
         {
-            AddBottle(new Bottle { Volume = 500, Description = "Water Bottle"});
-            AddBottle(new Bottle { Volume = 600, Description = "Wine Bottle" });
-            AddBottle(new Bottle { Volume = 700, Description = "Soda Bottle" });
+            if (includeData)
+            {
+                AddBottle(new Bottle { Volume = 500, Description = "Water Bottle" });
+                AddBottle(new Bottle { Volume = 600, Description = "Wine Bottle" });
+                AddBottle(new Bottle { Volume = 700, Description = "Soda Bottle" });
+            }
+
         }
 
         public IEnumerable<Bottle> Get(int? volumeAtLeast = null,
@@ -20,7 +25,8 @@ namespace RESTBottle.Bottles
             string? sortOrder = null
             )
         {
-            IEnumerable<Bottle> result = new List<Bottle>();
+            IEnumerable<Bottle> result = bottles.AsEnumerable();
+
             if (volumeAtLeast != null)
             {
                 result = result.Where(b => b.Volume >= volumeAtLeast);
@@ -35,11 +41,15 @@ namespace RESTBottle.Bottles
                 switch (sortOrder)
                 {
                     case "Volume":
-                        return bottles.OrderBy(b => b.Volume);
+                        result = result.OrderBy(b => b.Volume);
+                        break;
                     case "volumeDesc":
-                        return result.OrderByDescending(b => b.Volume);
+                        result = result.OrderByDescending(b => b.Volume);
+                        break;
+                    case "Description":
                     case "desc":
-                        return result.OrderBy(b => b.Description);
+                        result = result.OrderBy(b => b.Description);
+                        break;
                 }
             }
             return result;

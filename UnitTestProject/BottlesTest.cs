@@ -1,15 +1,40 @@
-﻿using System.Linq;
+﻿using System;
+using System.Diagnostics.Metrics;
+using System.Linq;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Query;
+using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using RESTBottle.Bottles;
 using Xunit;
+using static System.Net.Mime.MediaTypeNames;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace UnitTestProject
 {
-    public class UnitTest1
+    public class BottlesTest
     {
+        bool useDatabase = true;
+        IBottlesRepository repo;
+        public BottlesTest()
+        {
+            if (useDatabase)
+            {
+                var optionsBuilder = new DbContextOptionsBuilder<BottlesDBContext>();
+                optionsBuilder.UseSqlServer("Data Source=(localdb)\\MSSQLLocalDB;Initial Catalog=Bottles;Integrated Security=True;Connect Timeout=30;Encrypt=False;Trust Server Certificate=False;Application Intent=ReadWrite;Multi Subnet Failover=False");
+                BottlesDBContext _dbContext = new(optionsBuilder.Options);
+                _dbContext.Database.ExecuteSqlRaw("TRUNCATE TABLE dbo.Bottles");
+                repo = new BottlesRepositoryDatabase(_dbContext);
+            }
+            else
+            {
+                repo = new BottlesRepositoryList(includeData: false);
+
+            }
+        }
         [Fact]
         public void GetAll_Returns_Initial_Three_Bottles()
         {
-            var repo = new BottlesRepository();
+            IBottlesRepository repo = new BottlesRepositoryList();
 
             var all = repo.Get(sortOrder: "Description").ToList();
 
@@ -19,7 +44,7 @@ namespace UnitTestProject
         [Fact]
         public void AddBottle_Assigns_Id_And_Adds_To_Repository()
         {
-            var repo = new BottlesRepository();
+            IBottlesRepository repo = new BottlesRepositoryList();
             var newBottle = new Bottle { Volume = 250, Description = "Test Bottle" };
 
             var added = repo.AddBottle(newBottle);
@@ -32,7 +57,7 @@ namespace UnitTestProject
         [Fact]
         public void GetById_Returns_Bottle_When_Found_And_Null_When_NotFound()
         {
-            var repo = new BottlesRepository();
+            IBottlesRepository repo = new BottlesRepositoryList();
 
             var found = repo.GetById(1);
             var notFound = repo.GetById(999);
@@ -45,7 +70,7 @@ namespace UnitTestProject
         [Fact]
         public void Remove_Removes_And_Returns_Bottle_When_Exists()
         {
-            var repo = new BottlesRepository();
+            IBottlesRepository repo = new BottlesRepositoryList();
 
             var removed = repo.Remove(2);
 
@@ -57,7 +82,7 @@ namespace UnitTestProject
         [Fact]
         public void Update_Updates_And_Returns_Bottle_When_Exists_And_Null_When_Not()
         {
-            var repo = new BottlesRepository();
+            IBottlesRepository repo = new BottlesRepositoryList();
 
             var updated = repo.Update(3, new Bottle { Volume = 999, Description = "Updated" });
 
