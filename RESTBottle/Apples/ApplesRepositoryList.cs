@@ -1,4 +1,7 @@
-﻿namespace RESTBottle.Apples
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+
+namespace RESTBottle.Apples
 {
     public class ApplesRepositoryList : IApplesRepository
     {
@@ -8,14 +11,23 @@
         {
             if (includeData)
             {
-                AddApple(new Apple { Variety = "Granny Smith", Description = "Green and tart" });
-                AddApple(new Apple { Variety = "Red Delicious", Description = "Red and sweet" });
-                AddApple(new Apple { Variety = "Fuji", Description = "Crisp and sweet" });
+                AddApple(new Apple { Variety = "Granny Smith", Description = "Green and tart", Weight = 150 });
+                AddApple(new Apple { Variety = "Red Delicious", Description = "Red and sweet", Weight = 200 });
+                AddApple(new Apple { Variety = "Fuji", Description = "Crisp and sweet", Weight = 180 });
             }
         }
-        public IEnumerable<Apple> Get()
+        public IEnumerable<Apple> Get(int? minimumweight, int? maximumweight)
         {
-            return apples.AsEnumerable();
+            IEnumerable<Apple> result = apples.AsReadOnly();
+            if (minimumweight != null)
+            {
+                result = result.Where(a => a.Weight >= minimumweight);
+            }
+            if (maximumweight != null)
+            {
+                result = result.Where(a => a.Weight <= maximumweight);
+            }
+                return result;
         }
         public Apple? GetById(int id)
         {

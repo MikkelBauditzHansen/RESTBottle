@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.IdentityModel.Tokens;
 using RESTBottle.Apples;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
@@ -7,6 +9,8 @@ namespace RESTBottle.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
+
     public class ApplesController : ControllerBase
     {
         private ApplesRepositoryList _repo;
@@ -16,9 +20,18 @@ namespace RESTBottle.Controllers
         }
         // GET: api/<ApplesController>
         [HttpGet]
-        public IEnumerable<Apple> Get()
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [Authorize]
+
+        public ActionResult<IEnumerable<Apple>> Get([FromQuery] int? minimumweight, [FromQuery] int? maximumweight)
         {
-            return _repo.Get();
+            IEnumerable<Apple> result = _repo.Get(minimumweight, maximumweight);
+            if (result == null || result.Count() == 0)
+            {
+                return NoContent();
+            }
+            return Ok(result);
         }
 
         // GET api/<ApplesController>/5
@@ -30,6 +43,8 @@ namespace RESTBottle.Controllers
 
         // POST api/<ApplesController>
         [HttpPost]
+        [Authorize]
+
         public Apple? Post([FromBody] Apple newApple)
         {
             return _repo.AddApple(newApple);
