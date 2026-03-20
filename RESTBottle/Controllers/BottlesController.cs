@@ -31,9 +31,9 @@ namespace RESTBottle.Controllers
             Bottle? bottle = _repo.GetById(id);
             if (bottle == null)
             {
-                return NotFound();
+                return Ok(bottle);
             }
-            return Ok(bottle);
+            return NotFound();
         }
 
         // POST api/<BottlesController>
