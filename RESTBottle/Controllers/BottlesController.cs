@@ -33,7 +33,7 @@ namespace RESTBottle.Controllers
             {
                 return NotFound();
             }
-            return null;
+            return Ok(bottle);
         }
 
         // POST api/<BottlesController>
