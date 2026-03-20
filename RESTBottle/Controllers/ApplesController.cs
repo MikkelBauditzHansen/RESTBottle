@@ -43,7 +43,7 @@ namespace RESTBottle.Controllers
 
         // POST api/<ApplesController>
         [HttpPost]
-        [Authorize]
+        [Authorize(Roles = "Admin")]
 
         public Apple? Post([FromBody] Apple newApple)
         {
@@ -59,6 +59,7 @@ namespace RESTBottle.Controllers
 
         // DELETE api/<ApplesController>/5
         [HttpDelete("{id}")]
+        [Authorize(Roles = "Admin")]
         public Apple? Delete(int id)
         {
             return _repo.Remove(id);

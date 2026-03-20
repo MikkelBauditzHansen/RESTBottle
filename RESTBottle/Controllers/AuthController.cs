@@ -24,45 +24,56 @@ namespace RESTBottle.Controllers
             public string? Username { get; set; }
             public string? Password { get; set; }
         }
-
-        [HttpPost("login")]
-        [AllowAnonymous]
-        public IActionResult Login([FromBody] LoginRequest request)
+        private string GenerateJwtToken(string username, string role) // Added role parameter
         {
-            if (request == null || string.IsNullOrEmpty(request.Username) || string.IsNullOrEmpty(request.Password))
-                return BadRequest("Missing username or password.");
-
-            // Simple credential check as requested
-            if (request.Username != "admin" || request.Password != "1234")
-                return Unauthorized();
-
-            var keyStr = _config["Jwt:Key"];
-            var issuer = _config["Jwt:Issuer"];
-            var audience = _config["Jwt:Audience"];
-
-            if (string.IsNullOrEmpty(keyStr) || string.IsNullOrEmpty(issuer) || string.IsNullOrEmpty(audience))
-                return StatusCode(500, "JWT configuration (Jwt:Key, Jwt:Issuer, Jwt:Audience) is missing.");
-
-            var key = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(keyStr));
+            var jwtSettings = _config.GetSection("Jwt");
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings["Key"]!));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
+            // Claims are the pieces of information "baked" into the token
             var claims = new[]
             {
-                new Claim(ClaimTypes.Name, request.Username),
-                // Add any additional claims if needed
+            new Claim(JwtRegisteredClaimNames.Sub, username),
+            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+            new Claim(ClaimTypes.Name, username),
+            new Claim(ClaimTypes.Role, role) // The token now bakes the dynamic role into the passport!
             };
 
             var token = new JwtSecurityToken(
-                issuer: issuer,
-                audience: audience,
+                issuer: jwtSettings["Issuer"],
+                audience: jwtSettings["Audience"],
                 claims: claims,
-                expires: DateTime.UtcNow.AddHours(1),
+                expires: DateTime.Now.AddHours(2),
                 signingCredentials: creds
             );
 
-            var tokenString = new JwtSecurityTokenHandler().WriteToken(token);
+            return new JwtSecurityTokenHandler().WriteToken(token);
+        }
 
-            return Ok(new { token = tokenString });
+        [HttpPost("login")]
+        [AllowAnonymous]
+        public IActionResult Login([FromBody] LoginRequest login)
+        {
+            // 1. Validate the user and assign a role
+            string role = "";
+
+            if (login.Username == "admin" && login.Password == "1234")
+            {
+                role = "Admin";
+            }
+            else if (login.Username == "user" && login.Password == "1234")
+            {
+                role = "User";
+            }
+            else
+            {
+                return Unauthorized("Invalid username or password.");
+            }
+
+            // Pass the role to the generator
+            var token = GenerateJwtToken(login.Username, role);
+            return Ok(new { token });
+
         }
     }
 }
