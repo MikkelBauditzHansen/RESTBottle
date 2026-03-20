@@ -13,7 +13,7 @@ namespace UnitTestProject
 {
     public class BottlesTest
     {
-        bool useDatabase = true;
+        bool useDatabase = false;
         IBottlesRepository repo;
         public BottlesTest()
         {
