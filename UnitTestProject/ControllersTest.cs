@@ -114,7 +114,7 @@ namespace UnitTestProject
         {
             var controller = CreateControllerWithSeededRepo();
 
-            var deleteResult = controller.Delete(999);
+            var deleteResult = controller.Delete(null);
 
             Assert.IsType<NotFoundObjectResult>(deleteResult.Result);
         }
