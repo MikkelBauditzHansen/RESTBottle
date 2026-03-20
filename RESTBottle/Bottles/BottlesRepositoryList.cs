@@ -57,7 +57,7 @@ namespace RESTBottle.Bottles
 
         public Bottle AddBottle(Bottle bottle)
         {
-            bottle.Id = nextId++;
+            //bottle.Id = nextId++;
             bottles.Add(bottle);
             return bottle;
         }
