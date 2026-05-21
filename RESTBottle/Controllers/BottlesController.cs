@@ -40,7 +40,7 @@ namespace RESTBottle.Controllers
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [HttpPost]
-        [Authorize]
+        //[Authorize]
         public ActionResult<Bottle> Post([FromBody] Bottle newBottle)
         {
             try
@@ -88,7 +88,7 @@ namespace RESTBottle.Controllers
         [HttpDelete("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [Authorize]
+        //[Authorize]
         public ActionResult<Bottle?> Delete(int id)
         {
             var deleted = _repo.Remove(id);
